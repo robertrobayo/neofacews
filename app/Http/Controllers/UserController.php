@@ -29,20 +29,15 @@ class UserController extends Controller
      *  Funcion for return all users
      */
     public function all(Request $request)
-    {            
+    {    
+        try {
+
             try {
 
                 $ip = $request['ip'];
                 $port = $request['port'];
                 $user = $request['user'];
                 $password = $request['pass'];
-
-               /*  $urlsoap = $request["urlsoap"];
-                $configsoap = [
-                    'login' =>  $request["login"],
-                    'password' =>  $request["password"],
-                    'exceptions' => true,
-                ]; */
 
                 $urlsoap = 'http://'.$ip.':'.$port.'/'.config('constants.urlsoap');
 
@@ -52,13 +47,10 @@ class UserController extends Controller
                     'exceptions' => true,
                     'connection_timeout'=> 10,
                     
-                ];
-                try {    
+                ];  
                     ini_set('default_socket_timeout', 10);
-                    $result-> $client = new SoapClient($urlsoap, $configsoap);
-                    
+                    $client = new SoapClient($urlsoap, $configsoap);
                     $result = $client->__soapCall("ListSubjects", array());
-                    
                     $result = $result->ListSubjectsResult->SubjectInfo;
 
                     // Create structured array
@@ -88,17 +80,18 @@ class UserController extends Controller
                         array_push($data, $user);
                     }
 
-                // Return all user information
-                return response() -> json(
-                    array('data' => $data, 'message' => config('constants.messages.3.message')),
-                    config('constants.messages.3.code')
-                );
+                    // Return all user information
+                    return response() -> json(
+                        array('data' => $data, 'message' => config('constants.messages.3.message')),
+                        config('constants.messages.3.code')
+                    );
 
-            } catch (SoapFault $e) {
+            } catch (\Throwable $th) {
                 return response() -> json(config('constants.messages.2.message'), config('constants.messages.2.code'));
             }
         } catch (\Throwable $th) {
-            return response() -> json(config('constants.messages.2.message'), config('constants.messages.2.code'));
+            return $th;
+            //return response() -> json(config('constants.messages.1.message'), config('constants.messages.1.code'));
         }
     }
 
@@ -113,8 +106,8 @@ class UserController extends Controller
             $ip = $request['ip'];
             $port = $request['port'];
             $user = $request['user'];
-            $password = $request['pass'];
-            
+            $password = $request['pass']; 
+
             $subject = array(
                 'subject' => array(
                     'SubjectId' => $guid
@@ -122,7 +115,7 @@ class UserController extends Controller
             );
 
             $urlsoap = 'http://'.$ip.':'.$port.'/'.config('constants.urlsoap');
-
+          
             $configsoap = [
                 'login' => $user,
                 'password' =>  $password,
@@ -134,7 +127,7 @@ class UserController extends Controller
                 $client = new SoapClient($urlsoap, $configsoap);
                 $result = $client->__soapCall("GetSubject", array($subject));
                 $value = $result->GetSubjectResult;
-
+                
                 // Create structured array
                 $data = $value;
 
@@ -249,10 +242,10 @@ class UserController extends Controller
                 'login' => $user,
                 'password' =>  $pass,
                 'exceptions' => true,
-                'connection_timeout'=> 5,
+                'connection_timeout'=> 10,
             ];
-                try {
-                    ini_set('default_socket_timeout', 5);
+              //  try {
+                    ini_set('default_socket_timeout', 10);
                     $client = new SoapClient($urlsoap, $configsoap);
 
                     $response = $client->__soapCall("EnrolSubject", array($enrolSubject));
@@ -265,10 +258,10 @@ class UserController extends Controller
                         return response() -> json($response->EnrolSubjectResult->Error->Message, config('constants.messages.2.code'));
                     }
     
-                } catch (SoapFault $e) {
+             /*    } catch (SoapFault $e) {
                     return response() -> json(config('constants.messages.2.message'), config('constants.messages.2.code'));
                 }
-
+ */
         } catch (\Throwable $th) {
             return $th;
             return response() -> json(config('constants.messages.1.message'), config('constants.messages.1.code'));

@@ -26,13 +26,6 @@ class CameraController extends Controller
                 $user = $request['user'];
                 $password = $request['pass'];
 
-               /*  $urlsoap = $request["urlsoap"];
-                $configsoap = [
-                    'login' =>  $request["login"],
-                    'password' =>  $request["password"],
-                    'exceptions' => true,
-                ]; */
-
                 $urlsoap = 'http://'.$ip.':'.$port.'/'.config('constants.urlsoap');
 
                 $configsoap = [
@@ -42,13 +35,9 @@ class CameraController extends Controller
                 ];
 
                 $client = new SoapClient($urlsoap, $configsoap);
-                /* $client = new SoapClient("http://172.20.96.233:8790/".config('constants.urlsoap'), config('constants.configsoap')); */
                 $result = $client->__soapCall("GetCameras", array());
                 $result = $result->GetCamerasResult->CameraInfo;
 
-
-                
-                
                 // Create structured array
                 $data = array();
 
@@ -64,7 +53,6 @@ class CameraController extends Controller
                     array_push($data, $camera);
                 }
 
-                
                 // Return all camera information
                 return response() -> json(
                     array('data' => $data, 'message' => config('constants.messages.3.message')),
@@ -77,7 +65,6 @@ class CameraController extends Controller
 
         } catch (\Throwable $th) {
             return $th;
-            //return response() -> json(config('constants.messages.1.message'), config('constants.messages.1.code'));
         }
     }
 
